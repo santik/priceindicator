@@ -9,7 +9,8 @@ public class BatchRunStatus {
         ANNOUNCED,
         IN_PROGRESS,
         CANCELED,
-        FINISHED
+        FINISHED,
+        ERROR
     }
 
     private final BatchRunId batchRunId;

@@ -3,6 +3,7 @@ package com.priceindicator.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,6 +17,7 @@ import com.priceindicator.domain.InstrumentId;
 import com.priceindicator.domain.PricePayload;
 import com.priceindicator.repository.BatchRepository;
 import com.priceindicator.repository.PriceRepository;
+import com.priceindicator.repository.exception.BatchNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,13 +63,13 @@ class PricePublishServiceTest {
         PricePayload payload = PricePayload.of("payload");
         Price price = Price.builder().id(instrumentalId).asOf(LocalDateTime.now()).payload(payload).build();
         List<Price> prices = Collections.singletonList(price);
-        PriceBatch batchPart = PriceBatch.builder().batchRunId(batchRunId).prices(prices).build();
+        PriceBatch priceBatch = PriceBatch.builder().batchRunId(batchRunId).prices(prices).build();
 
         //act
-        BatchRunStatus batchStatus = service.publishBatch(batchPart);
+        BatchRunStatus batchStatus = service.publishBatch(priceBatch);
 
         //assert
-        verify(batchRepository).addPrices(batchPart);
+        verify(batchRepository).addPrices(priceBatch);
         assertEquals(Status.IN_PROGRESS, batchStatus.getStatus());
     }
 
@@ -82,10 +84,10 @@ class PricePublishServiceTest {
             Price price = Price.builder().id(instrumentalId).asOf(LocalDateTime.now()).payload(payload).build();
             prices.add(price);
         });
-        PriceBatch batchPart = PriceBatch.builder().batchRunId(batchRunId).prices(prices).build();
+        PriceBatch priceBatch = PriceBatch.builder().batchRunId(batchRunId).prices(prices).build();
 
         //act && assert
-        assertThrows(IllegalArgumentException.class, () -> service.publishBatch(batchPart));
+        assertThrows(IllegalArgumentException.class, () -> service.publishBatch(priceBatch));
     }
 
     @Test
@@ -93,10 +95,29 @@ class PricePublishServiceTest {
         //arrange
         BatchRunId batchRunId = BatchRunId.of(UUID.randomUUID());
         List<Price> prices = new ArrayList<>();
-        PriceBatch batchPart = PriceBatch.builder().batchRunId(batchRunId).prices(prices).build();
+        PriceBatch priceBatch = PriceBatch.builder().batchRunId(batchRunId).prices(prices).build();
 
         //act && assert
-        assertThrows(IllegalArgumentException.class, () -> service.publishBatch(batchPart));
+        assertThrows(IllegalArgumentException.class, () -> service.publishBatch(priceBatch));
+    }
+
+    @Test
+    void publishBatch_withNotExistingBatchRunId_shouldReturnCorrectStatus() {
+        //arrange
+        BatchRunId batchRunId = BatchRunId.of(UUID.randomUUID());
+        Price price = Price.builder()
+            .id(InstrumentId.of(UUID.randomUUID().toString())).asOf(LocalDateTime.now())
+            .payload(PricePayload.of("payload"))
+            .build();
+        List<Price> prices = Collections.singletonList(price);
+        PriceBatch priceBatch = PriceBatch.builder().batchRunId(batchRunId).prices(prices).build();
+        doThrow(new BatchNotFoundException()).when(batchRepository).addPrices(priceBatch);
+
+        //act
+        BatchRunStatus batchRunStatus = service.publishBatch(priceBatch);
+
+        //assert
+        assertEquals(Status.ERROR, batchRunStatus.getStatus());
     }
 
     @Test

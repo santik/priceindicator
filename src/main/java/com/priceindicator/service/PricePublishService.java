@@ -7,6 +7,7 @@ import com.priceindicator.domain.Price;
 import com.priceindicator.domain.PriceBatch;
 import com.priceindicator.repository.BatchRepository;
 import com.priceindicator.repository.PriceRepository;
+import com.priceindicator.repository.exception.BatchNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,13 @@ public class PricePublishService implements PricePublisher {
         if (batch.getPrices().size() < MIN_BATCH_SIZE || batch.getPrices().size() > MAX_BATCH_SIZE) {
             throw new IllegalArgumentException("Incorrect batch size");
         }
-        batchRepository.addPrices(batch);
-        return new BatchRunStatus(batch.getBatchRunId(), Status.IN_PROGRESS);
+        Status status = Status.IN_PROGRESS;
+        try {
+            batchRepository.addPrices(batch);
+        } catch (BatchNotFoundException e) {
+            status = Status.ERROR;
+        }
+        return new BatchRunStatus(batch.getBatchRunId(), status);
     }
 
     @Override
