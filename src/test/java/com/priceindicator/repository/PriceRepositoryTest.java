@@ -3,6 +3,8 @@ package com.priceindicator.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.priceindicator.domain.Price;
 import com.priceindicator.domain.InstrumentId;
@@ -24,18 +26,20 @@ import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @Slf4j
 class PriceRepositoryTest {
 
     private PriceRepository repository;
-
-    private int coresNumber = Runtime.getRuntime().availableProcessors();
+    private LastPriceRepository lastPriceRepository;
+    private final int coresNumber = Runtime.getRuntime().availableProcessors();
 
     @BeforeEach
     void setUp() {
-        repository = new PriceRepository();
+        lastPriceRepository = mock(LastPriceRepository.class);
+        repository = new PriceRepository(lastPriceRepository);
     }
 
     @Test
@@ -77,9 +81,8 @@ class PriceRepositoryTest {
         repoPricesMap.forEach((instrumentId, pricesSet) -> assertEquals(pricesSet.size(), instrumentsCount.get(instrumentId)));
     }
 
-
     @Test
-    void getPriceById_withPrices_shouldReturnTheMostRecent() {
+    void addPrices_withPrices_shouldAddCorrectPriceToLastPriceRepo() {
         //arrange
         InstrumentId instrumentId = InstrumentId.of(UUID.randomUUID().toString());
         String nowPricePayload = "Now price";
@@ -100,24 +103,25 @@ class PriceRepositoryTest {
             .build();
 
         repository.addPrices(List.of(yesterdayPrice, nowPrice, hourAgoPrice));
+        ArgumentCaptor<Map<InstrumentId, Price>> argumentCaptor = ArgumentCaptor.forClass(Map.class);
 
         //act
-        Optional<PricePayload> priceById = repository.getPriceById(instrumentId);
+        verify(lastPriceRepository).addPrices(argumentCaptor.capture());
 
         //assert
-        assertEquals(nowPricePayload, priceById.get().getPayload());
+        assertEquals(nowPrice, argumentCaptor.getValue().get(instrumentId));
     }
 
     @Test
-    void getPriceById_withoutPrices_shouldReturnTheMostRecent() {
+    void getLastPriceById_shouldReturnPriceFromLastPriceRepo() {
         //arrange
         InstrumentId instrumentId = InstrumentId.of(UUID.randomUUID().toString());
 
         //act
-        Optional<PricePayload> priceById = repository.getPriceById(instrumentId);
+        repository.getLastPriceById(instrumentId);
 
         //assert
-        assertTrue(priceById.isEmpty());
+        verify(lastPriceRepository).getPriceById(instrumentId);
     }
 
     //yes, I know it is hacky, but I believe it is better than return values only for tests

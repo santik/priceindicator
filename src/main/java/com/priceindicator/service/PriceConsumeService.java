@@ -15,6 +15,6 @@ public class PriceConsumeService implements PriceConsumer {
 
     @Override
     public Optional<PricePayload> getLastPriceById(InstrumentId instrumentId) {
-        return priceRepository.getPriceById(instrumentId);
+        return priceRepository.getLastPriceById(instrumentId);
     }
 }

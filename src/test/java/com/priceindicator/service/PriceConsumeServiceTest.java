@@ -20,7 +20,7 @@ class PriceConsumeServiceTest {
         PriceConsumeService service = new PriceConsumeService(repository);
         InstrumentId id = InstrumentId.of(UUID.randomUUID().toString());
         PricePayload payload = PricePayload.of("payload");
-        when(repository.getPriceById(id)).thenReturn(Optional.of(payload));
+        when(repository.getLastPriceById(id)).thenReturn(Optional.of(payload));
 
         //act
         Optional<PricePayload> lastPriceById = service.getLastPriceById(id);

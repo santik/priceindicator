@@ -27,8 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class BatchRepositoryTest {
 
     private BatchRepository repository;
-
-    private int coresNumber = Runtime.getRuntime().availableProcessors();
+    private final int coresNumber = Runtime.getRuntime().availableProcessors();
 
     @BeforeEach
     void setUp() {
@@ -57,7 +56,6 @@ class BatchRepositoryTest {
         assertTrue(repoBatchesMap.keySet().containsAll(batches));
         repoBatchesMap.forEach((key, value) -> assertNotNull(value));
     }
-
 
     @Test
     void addPrices_shouldBeAbleToAddPricesConcurrently() throws InterruptedException {

@@ -15,8 +15,7 @@ Or instead of querying price directly we can request to create a file with all t
 
 #### Points for improvement
 - Remove not finished batches by timeout.
-- Do not do price publishing synchronously. Instead, we can publish events and process it separately.
-- If we don't need all historical prices we could use map instrumentId => price for better performance
+- Do not process prices synchronously. Instead, we can publish events and process it separately.
 
 ### Running
 `mvn clean test`
