@@ -28,6 +28,8 @@ class BatchRepositoryTest {
 
     private BatchRepository repository;
 
+    private int coresNumber = Runtime.getRuntime().availableProcessors();
+
     @BeforeEach
     void setUp() {
         repository = new BatchRepository();
@@ -37,7 +39,7 @@ class BatchRepositoryTest {
     void announceBatch_shouldCreateAnEntry() throws InterruptedException {
         //arrange
         List<BatchRunId> batches = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        ExecutorService executorService = Executors.newFixedThreadPool(coresNumber);
 
         //act
         for (int j = 0; j < 10; j++) {
@@ -60,7 +62,7 @@ class BatchRepositoryTest {
     @Test
     void addPrices_shouldBeAbleToAddPricesConcurrently() throws InterruptedException {
         //arrange
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(coresNumber);
         int batchesCount = 20;
 
         //act

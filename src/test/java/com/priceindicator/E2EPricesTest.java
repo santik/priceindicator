@@ -35,6 +35,8 @@ public class E2EPricesTest {
     @Autowired
     private PricePublisher pricePublisher;
 
+    private int coresNumber = Runtime.getRuntime().availableProcessors();
+
     @Test
     void testPositiveFlow() throws InterruptedException {
         //announce
@@ -42,7 +44,7 @@ public class E2EPricesTest {
 
         //publish
         Price targetPrice = null;
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(coresNumber);
         for (int j = 0; j < 100; j++) {
             List<Price> prices = new ArrayList<>();
             IntStream.range(0, 100).forEach(number -> {

@@ -31,6 +31,8 @@ class PriceRepositoryTest {
 
     private PriceRepository repository;
 
+    private int coresNumber = Runtime.getRuntime().availableProcessors();
+
     @BeforeEach
     void setUp() {
         repository = new PriceRepository();
@@ -59,7 +61,7 @@ class PriceRepositoryTest {
             instrumentsCount.put(price.getId(), instrumentsCount.get(price.getId()) + 1);
         });
 
-        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        ExecutorService executorService = Executors.newFixedThreadPool(coresNumber);
         for (int j = 0; j < 5; j++) {
             executorService.execute(() -> repository.addPrices(prices));
         }
