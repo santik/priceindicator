@@ -12,10 +12,11 @@ Or instead of querying price directly we can request to create a file with all t
 - Batch run can be finished or canceled any time by the batch run id.
 - When batch run is finished or canceled application removes batch run id and price can not be published for this run anymore.
 - When batch run is finished the whole batch run data becoming accessible for querying.
+- Latest price per id is stored separately for more performant querying.
 
 #### Points for improvement
 - Remove not finished batches by timeout.
-- Do not process prices synchronously. Instead, we can publish events and process it separately.
+- Do not process prices synchronously. Instead, we can publish events and process them separately.
 
 ### Running
 `mvn clean test`
